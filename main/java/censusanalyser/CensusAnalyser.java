@@ -28,4 +28,29 @@ public class CensusAnalyser {
             throw  new CensusAnalyserException(e.getMessage(),CensusAnalyserException.ExceptionType.UN_PROCCESABLE);
         }
     }
+    /**
+     * This method will load only State data from csv file.
+     * @param csvFilePath
+     * @return
+     * @throws CensusAnalyserException
+     */
+    public int loadIndianStateCode(String csvFilePath) throws CensusAnalyserException {
+        try (Reader reader = Files.newBufferedReader(Paths.get(csvFilePath));
+        ) {
+            CsvToBeanBuilder<IndiaStateCSV> csvToBeanBuilder = new CsvToBeanBuilder<>(reader);
+            csvToBeanBuilder.withType(IndiaStateCSV.class);
+            csvToBeanBuilder.withIgnoreLeadingWhiteSpace(true);
+            CsvToBean<IndiaStateCSV> csvToBean = csvToBeanBuilder.build();
+            Iterator<IndiaStateCSV> censusCSVIterator = csvToBean.iterator();
+            Iterable<IndiaStateCSV> csvIterable = () -> censusCSVIterator;
+            int numOfEnteries = (int) StreamSupport.stream(csvIterable.spliterator(), false).count();
+            return numOfEnteries;
+        } catch (IOException e) {
+            throw new CensusAnalyserException(e.getMessage(),
+                    CensusAnalyserException.ExceptionType.CENSUS_FILE_PROBLEM);
+        } catch (IllegalStateException e) {
+            throw new CensusAnalyserException(e.getMessage(),
+                    CensusAnalyserException.ExceptionType.UNABLE_TO_PARSE);
+        }
+    }
 }
